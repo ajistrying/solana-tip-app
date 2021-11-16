@@ -7,14 +7,27 @@ import { PublicKey } from '@solana/web3.js';
 
 export const TipModal = () => {
 
+  const SOL_WALLET_LENGTH = 44;
+  // EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
+
   const [walletAddress, setWalletAddress ] = useState(null);
-  const [tipValue, setTipValue] = useState(0.05);
+
+
+  // Solana wallet address validation state management
   const [ addressToSearch, setAddressToSearch ] = useState("");
   const [ addressSearchError, setAddressSearchError] = useState("");
   const [ isAddressSearchErrorSet, setIsAddressSearchErrorSet] = useState(false);
   const [ didFindAddress, setDidFindAddress ] = useState(false);
-  const [ didConfirmSolAmount, setDidConfirmSolAmount] = useState(false);
+  
 
+  // Sol amount input validation
+  const [ tipValue, setTipValue ] = useState(0.05);
+  const [ didConfirmSolAmount, setDidConfirmSolAmount] = useState(false);
+  const [ solAmountError, setSolAmountError ] = useState("");
+  const [ isSolAmountErrorSet, setIsSolAmountErrorSet ] = useState(false);
+
+
+  // Hooks
   const { connection } = useConnection();
   const { publicKey, sendTransaction } = useWallet();
 
@@ -24,13 +37,30 @@ export const TipModal = () => {
     }
   },[publicKey]);
 
-  const parseValue = (tipValue) => {
-    Number(tipValue)
+
+  // Custom utility functions
+  const validateTipValue = (amount) => {
+
+    const parsedAmount = Number(amount);
+
+    if(parsedAmount < 0.05) {
+      setIsSolAmountErrorSet(true);
+      setSolAmountError("Entered amount is too low, must be above 0.05 SOL");
+    } else if(parsedAmount > 50) {
+      setIsSolAmountErrorSet(true);
+      setSolAmountError("Entered amount is too high, must be below 50 SOL");
+    } else {
+      setIsSolAmountErrorSet(false);
+      setSolAmountError("");
+      setDidConfirmSolAmount(true);
+      setTipValue(amount);
+    }
   }
 
   const editAddress = () => {
     setDidFindAddress(false);
     setDidConfirmSolAmount(false);
+    setIsSolAmountErrorSet(false);
   }
 
   const editConfirmedSolAmount = () => {
@@ -39,16 +69,20 @@ export const TipModal = () => {
 
   const searchForAddress = async () => {
     try {
+      setTipValue(0.05);
       const searchablePubKey = new PublicKey(addressToSearch);
       const accountInfo = await connection.getAccountInfo(searchablePubKey);
-      if(addressToSearch && accountInfo) {
+      if(addressToSearch && accountInfo && addressToSearch.length == SOL_WALLET_LENGTH) {
         setDidFindAddress(true);
-        setIsAddressSearchErrorSet(false)
+        setIsAddressSearchErrorSet(false);
         setAddressSearchError("");
+      } else if(addressToSearch.length !== SOL_WALLET_LENGTH) {
+        throw new Error("Invalid wallet address")
       }
+
     } catch (error) {
       setIsAddressSearchErrorSet(true)
-      setAddressSearchError(`${error}`)
+      setAddressSearchError(`${error.message}, please try again`)
     }
    
   }
@@ -138,7 +172,7 @@ export const TipModal = () => {
             disabled={didConfirmSolAmount ? true : false}
             keepWithinRange={false}
             clampValueOnBlur={false}
-            onChange={(valueString) => setTipValue(parseValue(valueString))}
+            onChange={(valueString) => setTipValue(valueString)}
             value={tipValue}
           >
             <NumberInputField/>
@@ -165,10 +199,30 @@ export const TipModal = () => {
             rightIcon={<AddIcon />} 
             colorScheme="teal" 
             variant="outline"
-            onClick={() => {setDidConfirmSolAmount(tipValue)}}
+            onClick={() => {
+              validateTipValue(tipValue);
+            }}
           >
           Confirm Amount
           </Button>
+        }
+
+        {isSolAmountErrorSet &&
+          <Alert status="error">
+            <AlertIcon />
+            <AlertTitle mr={2}>Error: </AlertTitle>
+            <AlertDescription mr={8} >{solAmountError}</AlertDescription>
+            <CloseButton 
+              position="absolute" 
+              right="8px" 
+              top="8px"
+              onClick={() => {
+                  setSolAmountError("");
+                  setIsSolAmountErrorSet(false);
+                }
+              }
+            />
+          </Alert>
         }
 
         { didConfirmSolAmount &&
@@ -191,6 +245,5 @@ export const TipModal = () => {
   )
 }
 
-// TODO: Implement friendly user errors for sol input field
 // TODO: Look at potentially adding in a step counter to the sol amount input
 // TODO: Implement Tip Solana functionality
