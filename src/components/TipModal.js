@@ -3,15 +3,13 @@ import {  Alert, AlertIcon, AlertTitle, AlertDescription, CloseButton, Text, But
 import { SearchIcon, CheckIcon, EditIcon, AddIcon } from '@chakra-ui/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 
-import { PublicKey } from '@solana/web3.js';
+import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js';
 
 export const TipModal = () => {
 
   const SOL_WALLET_LENGTH = 44;
-  // EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
 
   const [walletAddress, setWalletAddress ] = useState(null);
-
 
   // Solana wallet address validation state management
   const [ addressToSearch, setAddressToSearch ] = useState("");
@@ -29,11 +27,12 @@ export const TipModal = () => {
 
   // Hooks
   const { connection } = useConnection();
-  const { publicKey, sendTransaction } = useWallet();
+  const { publicKey, signTransaction } = useWallet();
 
   useEffect(() => {
     if(publicKey) {
-      setWalletAddress(publicKey.toString())
+      const publicKeyString = publicKey.toString();
+      setWalletAddress(publicKeyString);
     }
   },[publicKey]);
 
@@ -72,19 +71,54 @@ export const TipModal = () => {
       setTipValue(0.05);
       const searchablePubKey = new PublicKey(addressToSearch);
       const accountInfo = await connection.getAccountInfo(searchablePubKey);
-      if(addressToSearch && accountInfo && addressToSearch.length == SOL_WALLET_LENGTH) {
+      if(addressToSearch && accountInfo && addressToSearch.length === SOL_WALLET_LENGTH) {
         setDidFindAddress(true);
         setIsAddressSearchErrorSet(false);
         setAddressSearchError("");
       } else if(addressToSearch.length !== SOL_WALLET_LENGTH) {
         throw new Error("Invalid wallet address")
       }
-
     } catch (error) {
       setIsAddressSearchErrorSet(true)
       setAddressSearchError(`${error.message}, please try again`)
     }
    
+  }
+
+  
+  const performTip = async (sendingAddress, amount_in_sol, receivingAddress) => {
+
+    const senderAddress = new PublicKey(sendingAddress);
+
+    // Create the transfer instructions 
+    const transactionInstruction = SystemProgram.transfer(
+      {
+        fromPubkey: senderAddress,
+        lamports: amount_in_sol * LAMPORTS_PER_SOL,
+        toPubkey: new PublicKey(receivingAddress)
+      }
+    );
+
+    // Initialize a new transaction instance and add the instructions to it 
+    const transaction = new Transaction().add(transactionInstruction);
+
+    // Set transaction variables
+    transaction.feePayer = senderAddress;
+    transaction.recentBlockhash = await (await connection.getRecentBlockhash()).blockhash;
+
+    transaction ? console.log('transaction created successfully') : console.log('transaction created unsuccessfully');
+    
+    // Request the sender to sign the transaction, returns a Transaction object
+    let signedTransaction = await signTransaction(transaction)
+
+    signedTransaction ? console.log('signed transaction created successfully') : console.log('signed transaction created unsuccessfully');
+
+    // Send a transaction that has already been signed and serialized into the wire format
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+
+    // Confirm whether the transaction went through or not
+    await connection.confirmTransaction(signature);
+    
   }
 
   return (
@@ -232,13 +266,14 @@ export const TipModal = () => {
               ml="2" 
               colorScheme="teal" 
               variant="outline"
+              onClick={() => {
+                performTip(walletAddress, tipValue, addressToSearch)
+              }}
             >
               Tip Solana
             </Button>
           </>
         }
-
-        
       </>
     }
   </VStack>
@@ -246,4 +281,8 @@ export const TipModal = () => {
 }
 
 // TODO: Look at potentially adding in a step counter to the sol amount input
-// TODO: Implement Tip Solana functionality
+// TODO: Add in "Made with :heart_emoji: by @wellingtonajo, feel free to tip me sol! - solana address: [solana address here]"
+// TODO: Clean up unnecessary log statements
+// TODO: Make sure it looks good on mobile????
+// TODO: Add in more comments as documentation
+
