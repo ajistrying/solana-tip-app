@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { VStack} from "@chakra-ui/react"
+import { VStack, Divider, Text, Link } from "@chakra-ui/react"
+import { ExternalLinkIcon } from "@chakra-ui/icons"
 
 import { clusterApiUrl } from '@solana/web3.js';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
@@ -45,6 +46,16 @@ function App() {
         <VStack spacing={4}>
           <TipModal/>
           <Wallet/>
+          <Divider width="50vw"/>
+          <Text fontSize="lg">
+            Built with ❤️ by <Link href="https://twitter.com/wellingtonajo" isExternal> Wellington A Johnson II <ExternalLinkIcon mx="1px" /> </Link>
+          </Text>
+          <Text fontSize="lg">
+            Feel free to tip me as well!
+          </Text>
+          <Text>
+            EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
+          </Text>
         </VStack>
       </WalletProvider>
     </ConnectionProvider>
