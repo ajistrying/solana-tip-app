@@ -51,7 +51,7 @@ function App() {
             Built with ❤️ by <Link href="https://twitter.com/wellingtonajo" isExternal> Wellington A Johnson II <ExternalLinkIcon mx="1px" /> </Link>
           </Text>
           <Text fontSize="lg">
-            Feel free to tip me as well!
+          👇🏾Feel free to tip me as well!👇🏾
           </Text>
           <Text>
             EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
