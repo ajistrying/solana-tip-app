@@ -1,70 +1,24 @@
-# Getting Started with Create React App
+# Welcome to the Solana Tip App!
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+I leveraged the [solana/wallet-adapter](https://github.com/solana-labs/wallet-adapter) and [solana/web3.js](https://github.com/solana-labs/solana-web3.js) packages in order to create this app as well, so shoutout to everyone who worked on those two libraries to make working with common solana api functionality in javascript possible/ a breeze!
 
-In the project directory, you can run:
+## Motivation
+I'm a hands-on learner, and when I first heard about Solana, I knew I had to build something around it in order to best understand it. This is the first project that came to mind once I understood the tools that were avialable to me.
 
-### `yarn start`
+I'm open sourcing this in the spirit of mst web3 projects being open sourced, although I wouldn't consider this a biug web3 project, its a start!
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Usage
+1. Clone the repo into your fav directory and run `yarn start`
+2. When you've pulled the code down, make sure you have two solana wallets to test with, and make sure to change the network to 'devnet'! This is located in the App.js file at:
+`const network = WalletAdapterNetwork.Devnet;`
+For reference, the full list of options is: 'Devnet', 'Testnet', or 'Mainnet'.
+3. Have fun tipping!
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
 
-### `yarn test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+_** Note: Solana's mainnet is still in beta at the time of this writing, due to the nature of this new technology evolving, I'll try my best to keep this updated, but make sure you know where you are sending your solana at all time, double and triple check the address/addresses you are sending to!!!! **_
 
-### `yarn build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
