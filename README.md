@@ -21,10 +21,10 @@ If you'd like to contribute, please do! I'm by no means an expert in React (I wo
 
 ## Donate
 If you'd like to send me eth, solana, btc, or harmony I'll post my wallet addresses here, not required, but I appreciate it if you do!
-Ethereum Address: 0x151a8C4183065fE6cd528baff7d8B98fbD58495A
-Solana Address: EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
-One Address: one1z5dgcsvrqe07dn2j3whl0k9e3774sj26kaeddn
-Bitcoin Address: 39yiingcEPQDTuAxaQQzjaijrueqEj5gNR
+* Ethereum(ETH) Address: 0x151a8C4183065fE6cd528baff7d8B98fbD58495A
+* Solana(SOL) Address: EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
+* Harmony(ONE) Address: one1z5dgcsvrqe07dn2j3whl0k9e3774sj26kaeddn
+* Bitcoin(BTC) Address: 39yiingcEPQDTuAxaQQzjaijrueqEj5gNR
 
 
 
