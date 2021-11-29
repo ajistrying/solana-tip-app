@@ -1,8 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import {  Alert, AlertIcon, AlertTitle, AlertDescription, CloseButton, Container, Text, Button, IconButton, NumberInput, NumberInputField, Input, Flex, Spinner, VStack } from "@chakra-ui/react"
-import { SearchIcon, CheckIcon, EditIcon, AddIcon } from '@chakra-ui/icons'
+import {  Alert, AlertIcon, 
+  AlertTitle, AlertDescription, 
+  CloseButton, Container, 
+  Text, Button, IconButton, 
+  NumberInput, NumberInputField, 
+  Input, Flex, Spinner, VStack } from "@chakra-ui/react"
+import { SearchIcon, CheckIcon, EditIcon, AddIcon, RepeatIcon } from '@chakra-ui/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-
+import { WalletAlert } from "./WalletAlert";
 import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js';
 
 export const TipModal = () => {
@@ -31,10 +36,12 @@ export const TipModal = () => {
   // App Loading State
   const [ isTipProcessLoading, setIsTipProcessLoading ] = useState(false);
 
+  // Successful Tip State
+  const [ isTipProcessCompleted, setIsTipProcessCompleted ] = useState(false);
 
   // Hooks
   const { connection } = useConnection();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, wallet } = useWallet();
 
   useEffect(() => {
     if(publicKey) {
@@ -100,7 +107,6 @@ export const TipModal = () => {
    
   }
 
-  
   const performTip = async (sendingAddress, amount_in_sol, receivingAddress) => {
 
     try {
@@ -135,194 +141,246 @@ export const TipModal = () => {
       await connection.confirmTransaction(signature);
 
       setIsTipProcessLoading(false);
+      setIsTipProcessCompleted(true);
 
     } catch (error) {
       setIsTipProcessLoading(false);
+      setIsTipProcessCompleted(false);
       setIsTipActionErrorSet(true);
       setTipActionError(`${error.message}`);
     }
     
   }
 
+  const resetTipProcess = () => {
+    setIsTipProcessCompleted(false);
+    setIsTipProcessLoading(false);
+    setIsTipActionErrorSet(false);
+    setIsSolAmountErrorSet(false);
+    setDidConfirmSolAmount(false);
+    setDidFindAddress(false);
+    setIsAddressSearchErrorSet(false);
+    setAddressToSearch("");
+  }
+
   return (
     <>
-      {isTipProcessLoading ? 
-        <Container pt="20" maxW="xl" centerContent>
-          <Spinner size="xl" />
-        </Container>
+      {isTipProcessCompleted ?
+        <>
+        <VStack>
+          <Text fontSize="6xl">Success!</Text>
+          <Button 
+            ml="2" 
+            px="6"
+            rightIcon={<RepeatIcon />} 
+            colorScheme="teal" 
+            variant="outline"
+            onClick={resetTipProcess}
+          >
+            Tip More Solana
+          </Button>
+
+        </VStack>
+        </>
         :
-        <VStack 
-        spacing={4}
-        pt="10"
-        >
-          <Text fontSize="3xl">Tip Someone Some Solana!</Text>
-          <Text fontSize="xl">Step 1: Enter a solana address</Text>
-          <VStack>
-            <Flex>
-              <Input 
-                variant="outline" 
-                placeholder="Enter an address" 
-                value={addressToSearch}
-                disabled={didFindAddress ? true : false}
-                onChange={event => {
-                  event.preventDefault();
-                  setAddressToSearch(event.target.value)}
-                }
-              />
-              {didFindAddress ? 
-                <IconButton
-                  ml="2"
-                  aria-label="Found address" 
-                  colorScheme="teal" 
-                  variant="outline" 
-                  disabled="true" 
-                  icon={<CheckIcon />} 
-                /> : 
-                <Button 
-                  ml="2" 
-                  px="6"
-                  rightIcon={<SearchIcon />} 
-                  colorScheme="teal" 
-                  variant="outline"
-                  onClick={searchForAddress}
-                >
-                Find
-                </Button>
-              }
-            </Flex>
-            { didFindAddress && 
-              <Button 
-                ml="2" 
-                px="6"
-                rightIcon={<EditIcon />} 
-                colorScheme="teal" 
-                variant="outline"
-                onClick={editAddress}
-              >
-                Edit Address
-              </Button>
-            }
-            
-            {isAddressSearchErrorSet &&
-              <Alert status="error">
-                <AlertIcon />
-                <AlertTitle mr={2}>Error: </AlertTitle>
-                <AlertDescription mr={8} >{addressSearchError}</AlertDescription>
-                <CloseButton 
-                  position="absolute" 
-                  right="8px" 
-                  top="8px"
-                  onClick={() => {
-                    setAddressSearchError("")
-                    setIsAddressSearchErrorSet(false)
-                    }
-                  }
-                />
-              </Alert>
-            }
-            
-          </VStack>
-          {didFindAddress && 
-            <>
-              <Text fontSize="xl">Step 2: Enter an amount of Sol you'd like to tip</Text>
-              <Flex alignItems="center">
-                <NumberInput 
-                  size="md" 
-                  maxW={24} 
-                  defaultValue={1} 
-                  min={0.05}
-                  max={50}
-                  disabled={didConfirmSolAmount ? true : false}
-                  keepWithinRange={false}
-                  clampValueOnBlur={false}
-                  onChange={(valueString) => setTipValue(valueString)}
-                  value={tipValue}
-                >
-                  <NumberInputField/>
-                </NumberInput>
-                <Text ml="2" fontSize="xl">SOL</Text>
-              </Flex>
-              <Text fontSize="sm">min: 0.05 max: 50</Text>
-
-              { didConfirmSolAmount ? 
-                <Button 
-                  ml="2" 
-                  px="6"
-                  rightIcon={<EditIcon />} 
-                  colorScheme="teal" 
-                  variant="outline"
-                  onClick={() => {editConfirmedSolAmount(null)}}
-                >
-                  Edit Amount
-                </Button>
-                :
-                <Button 
-                  ml="2" 
-                  px="6"
-                  rightIcon={<AddIcon />} 
-                  colorScheme="teal" 
-                  variant="outline"
-                  onClick={() => {
-                    validateTipValue(tipValue);
-                  }}
-                >
-                Confirm Amount
-                </Button>
-              }
-
-              {isSolAmountErrorSet &&
-                <Alert status="error">
-                  <AlertIcon />
-                  <AlertTitle mr={2}>Error: </AlertTitle>
-                  <AlertDescription mr={8} >{solAmountError}</AlertDescription>
-                  <CloseButton 
-                    position="absolute" 
-                    right="8px" 
-                    top="8px"
-                    onClick={() => {
-                        setSolAmountError("");
-                        setIsSolAmountErrorSet(false);
-                      }
+        <>
+          {isTipProcessLoading ? 
+            <Container pt="20" maxW="xl" centerContent>
+              <Spinner size="xl" />
+            </Container>
+            :
+            <VStack 
+            spacing={4}
+            pt="10"
+            >
+              <Text fontSize="3xl">Tip Someone Some Solana!</Text>
+              <Text fontSize="xl">Step 1: Enter a solana address</Text>
+              <VStack>
+                <Flex>
+                  <Input
+                    variant="outline" 
+                    placeholder="Enter an address" 
+                    value={addressToSearch}
+                    disabled={didFindAddress ? true : false}
+                    onChange={event => {
+                      event.preventDefault();
+                      setAddressToSearch(event.target.value)}
                     }
                   />
-                </Alert>
-              }
-
-              { didConfirmSolAmount &&
-                <>
-                  <Text fontSize="xl">Step 3: Tip away!</Text>
+                  {didFindAddress ? 
+                    <IconButton
+                      ml="2"
+                      aria-label="Found address" 
+                      colorScheme="teal" 
+                      variant="outline" 
+                      disabled="true" 
+                      icon={<CheckIcon />} 
+                    /> : 
+                    <Button 
+                      ml="2" 
+                      px="6"
+                      rightIcon={<SearchIcon />} 
+                      colorScheme="teal" 
+                      variant="outline"
+                      onClick={searchForAddress}
+                    >
+                    Find
+                    </Button>
+                  }
+                </Flex>
+                { didFindAddress && 
                   <Button 
                     ml="2" 
+                    px="6"
+                    rightIcon={<EditIcon />} 
                     colorScheme="teal" 
                     variant="outline"
-                    onClick={() => {
-                      performTip(walletAddress, tipValue, addressToSearch)
-                    }}
+                    onClick={editAddress}
                   >
-                    Tip Solana
+                    Edit Address
                   </Button>
-                  {isTipActionErrorSet &&
-                    <Alert status="error">
-                      <AlertIcon />
-                      <AlertTitle mr={2}>Error: </AlertTitle>
-                      <AlertDescription mr={8} >{tipActionError}</AlertDescription>
-                      <CloseButton 
-                        position="absolute" 
-                        right="8px" 
-                        top="8px"
-                        onClick={() => {
-                            setTipActionError("");
-                            setIsTipActionErrorSet(false);
-                          }
+                }
+                
+                {isAddressSearchErrorSet &&
+                  <Alert status="error">
+                    <AlertIcon />
+                    <AlertTitle mr={2}>Error: </AlertTitle>
+                    <AlertDescription mr={8} >{addressSearchError}</AlertDescription>
+                    <CloseButton 
+                      position="absolute" 
+                      right="8px" 
+                      top="8px"
+                      onClick={() => {
+                        setAddressSearchError("")
+                        setIsAddressSearchErrorSet(false)
                         }
-                      />
-                    </Alert>
+                      }
+                    />
+                  </Alert>
+                }
+                
+              </VStack>
+              {didFindAddress && 
+                <>
+                  <Text fontSize="xl">Step 2: Enter an amount of Sol you'd like to tip</Text>
+                  {wallet ?
+                    <>
+                      <Flex alignItems="center">
+                        <NumberInput 
+                          size="md" 
+                          maxW={24} 
+                          defaultValue={1} 
+                          min={0.05}
+                          max={50}
+                          disabled={didConfirmSolAmount ? true : false}
+                          keepWithinRange={false}
+                          clampValueOnBlur={false}
+                          onChange={(valueString) => setTipValue(valueString)}
+                          value={tipValue}
+                        >
+                          <NumberInputField/>
+                        </NumberInput>
+                        <Text ml="2" fontSize="xl">SOL</Text>
+                      </Flex>
+                      <Alert 
+                        status="info"
+                        alignItems="center"
+                        justifyContent="center"
+                        textAlign="center"
+                        width="300px"
+                        borderRadius="md"
+                      >
+                        <AlertIcon />
+                        Min Tip: 0.05
+                        Max Tip: 50
+                      </Alert>
+      
+                      { didConfirmSolAmount ? 
+                        <Button 
+                          ml="2" 
+                          px="6"
+                          rightIcon={<EditIcon />} 
+                          colorScheme="teal" 
+                          variant="outline"
+                          onClick={() => {editConfirmedSolAmount(null)}}
+                        >
+                          Edit Amount
+                        </Button>
+                        :
+                        <Button 
+                          ml="2" 
+                          px="6"
+                          rightIcon={<AddIcon />} 
+                          colorScheme="teal" 
+                          variant="outline"
+                          onClick={() => {
+                            validateTipValue(tipValue);
+                          }}
+                        >
+                        Confirm Amount
+                        </Button>
+                      }
+                      {isSolAmountErrorSet &&
+                        <Alert status="error" borderRadius="md">
+                          <AlertIcon />
+                          <AlertTitle mr={2}>Error: </AlertTitle>
+                          <AlertDescription mr={8} >{solAmountError}</AlertDescription>
+                          <CloseButton 
+                            position="absolute" 
+                            right="8px" 
+                            top="8px"
+                            onClick={() => {
+                                setSolAmountError("");
+                                setIsSolAmountErrorSet(false);
+                              }
+                            }
+                          />
+                        </Alert>
+                      }
+        
+                      { didConfirmSolAmount &&
+                        <>
+                          <Text fontSize="xl">Step 3: Tip away!</Text>
+                          <Button 
+                            ml="2" 
+                            colorScheme="teal" 
+                            variant="outline"
+                            onClick={() => {
+                              performTip(walletAddress, tipValue, addressToSearch)
+                            }}
+                          >
+                            Tip Solana
+                          </Button>
+                          {isTipActionErrorSet &&
+                            <Alert status="error" borderRadius="md">
+                              <AlertIcon />
+                              <AlertTitle mr={2}>Error: </AlertTitle>
+                              <AlertDescription mr={8} >{tipActionError}</AlertDescription>
+                              <CloseButton 
+                                position="absolute" 
+                                right="8px" 
+                                top="8px"
+                                onClick={() => {
+                                    setTipActionError("");
+                                    setIsTipActionErrorSet(false);
+                                  }
+                                }
+                              />
+                            </Alert>
+                          }
+                        </>
+                      }
+                    </>
+                  : 
+                    <WalletAlert/>
                   }
+    
+                  
                 </>
               }
-            </>
+            </VStack>
           }
-        </VStack>
+        </>
       }
     </>
   )
