@@ -12,7 +12,6 @@ I'm a hands-on learner, and when I first heard about Solana, I knew I had to bui
 I'm open sourcing this in the spirit of pretty much all great web3 projects being open sourced, although I wouldn't consider this a big web3 project, its a start! I'd love for people to fork it and creat their own bigger and better thing! I'll be working on this off and on to improve it and hopefully expand it to other coins as well.
 
 Cheers!
->>>>>>> ee0e03be5b982235cfa56761f1d3e5ec5dd52acd
 
 ## Usage
 1. Clone the repo into your fav directory and run `yarn start`
