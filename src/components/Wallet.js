@@ -5,7 +5,7 @@ import {
     WalletMultiButton
 } from '@solana/wallet-adapter-react-ui';
 
-import { VStack} from "@chakra-ui/react"
+import { VStack } from "@chakra-ui/react"
 
 // Default styles that can be overridden by your app
 require('@solana/wallet-adapter-react-ui/styles.css');
