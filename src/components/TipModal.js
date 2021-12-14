@@ -374,8 +374,6 @@ export const TipModal = () => {
                   : 
                     <WalletAlert/>
                   }
-    
-                  
                 </>
               }
             </VStack>
