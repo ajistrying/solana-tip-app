@@ -30,6 +30,7 @@ For reference, the full list of options is: 'Devnet', 'Testnet', or 'Mainnet'.
 If you'd like to contribute, please do! I'm by no means an expert in React (I work full time in Ruby/Ruby on Rails), so I'll be re-factoring as time passes and I learn more, but feel free to open up a PR and help out if you'd like!
 
 ## Future plans
+- Refactor to Typescript
 - Enable multiple tokens on Solana's blockchain to be tipped
 - Enable the ability to tip multiple wallets at once
 - Build out other cool new features!
