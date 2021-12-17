@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {  Alert, AlertIcon, 
+import {  Alert, AlertIcon, Link, 
   AlertTitle, AlertDescription, 
   CloseButton, Container, 
   Text, Button, IconButton, 
   NumberInput, NumberInputField, 
   Input, Flex, Spinner, VStack } from "@chakra-ui/react"
-import { SearchIcon, CheckIcon, EditIcon, AddIcon, RepeatIcon } from '@chakra-ui/icons'
+import { SearchIcon, CheckIcon, EditIcon, AddIcon, RepeatIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletAlert } from "./WalletAlert";
 import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js';
@@ -13,6 +13,7 @@ import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Transaction } from '@solana
 export const TipModal = () => {
 
   const SOL_WALLET_LENGTH = 44;
+  const NETWORK = "mainnet-beta"
 
   const [walletAddress, setWalletAddress ] = useState(null);
 
@@ -38,6 +39,7 @@ export const TipModal = () => {
 
   // Successful Tip State
   const [ isTipProcessCompleted, setIsTipProcessCompleted ] = useState(false);
+  const [ transactionSignature, setTransactionSignature] = useState("")
 
   // Hooks
   const { connection } = useConnection();
@@ -142,6 +144,7 @@ export const TipModal = () => {
 
       setIsTipProcessLoading(false);
       setIsTipProcessCompleted(true);
+      setTransactionSignature(signature);
 
     } catch (error) {
       setIsTipProcessLoading(false);
@@ -161,6 +164,7 @@ export const TipModal = () => {
     setDidFindAddress(false);
     setIsAddressSearchErrorSet(false);
     setAddressToSearch("");
+    setTransactionSignature("");
   }
 
   return (
@@ -169,6 +173,11 @@ export const TipModal = () => {
         <>
         <VStack>
           <Text fontSize="6xl">Success!</Text>
+          <Button size='md' colorScheme='teal' variant='outline'>
+            <Link fontSize='xl' href={`https://explorer.solana.com/tx/${transactionSignature}?cluster=${NETWORK}`} isExternal>
+              View your confirmed payment on Solana Explorer <ExternalLinkIcon mx='2px' />
+            </Link>
+          </Button>
           <Button 
             ml="2" 
             px="6"
