@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { VStack, Divider, Text, Link } from "@chakra-ui/react"
+import { VStack, Divider, Text, Link, Center } from "@chakra-ui/react"
 import { ExternalLinkIcon } from "@chakra-ui/icons"
 
 import { clusterApiUrl } from '@solana/web3.js';
@@ -21,7 +21,7 @@ import { Wallet } from './components/Wallet';
 function App() {
 
   // Can be set to 'devnet', 'testnet', or 'mainnet-beta'
-  const network = WalletAdapterNetwork.Mainnet;
+  const network = WalletAdapterNetwork.Devnet;
 
   // You can also provide a custom RPC endpoint
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
@@ -43,17 +43,20 @@ function App() {
   return ( 
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
-        <VStack spacing={4}>
+        <VStack spacing={4} px={11}>
           <TipModal/>
           <Wallet/>
           <Divider width="50vw"/>
-          <Text fontSize="lg">
-            Built with ❤️ by <Link href="https://twitter.com/wellingtonajo" isExternal> Wellington A Johnson II <ExternalLinkIcon mx="1px" /> </Link>
-          </Text>
-          <Text fontSize="lg">
+          <Center>
+            <Text fontSize="md">
+              Built with ❤️ 
+              by <Link href="https://twitter.com/wellingtonajo" isExternal> Wellington A Johnson II <ExternalLinkIcon mx="1px" /> </Link>
+            </Text>
+          </Center>
+          <Text fontSize="md">
           👇🏾Feel free to tip me as well!👇🏾
           </Text>
-          <Text>
+          <Text fontSize='sm'>
             EsXzHx68MCcv4TKzpgu35DUnJ691JZVofKm6LrvhFNNQ
           </Text>
         </VStack>

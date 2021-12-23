@@ -4,16 +4,29 @@ import {  Alert, AlertIcon, Link,
   CloseButton, Container, 
   Text, Button, IconButton, 
   NumberInput, NumberInputField, 
-  Input, Flex, Spinner, VStack } from "@chakra-ui/react"
+  Input, Flex, Spinner, VStack,
+  FormLabel, Select, FormControl } from "@chakra-ui/react"
 import { SearchIcon, CheckIcon, EditIcon, AddIcon, RepeatIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletAlert } from "./WalletAlert";
 import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Transaction } from '@solana/web3.js';
 
+// TODO: Extract performTip function into its own file
+// TODO: Look into @solana/spl-token-registry for other tokens
+// TODO: Implement ability to tip USDC
+/**
+ *  import @solana/spl-token
+ * 1. Find all token accounts owned by the user's wallet using getTokenAccountsByOwner()
+ * 2. Specify the TokenAccountsFilter with the USDC mint (EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v)
+ * 3. Find all token accounts owned by the tip receiver's wallet using getTokenAccountsByOwner()
+ * 4. Specify the TokenAccountsFilter with the USDC mint (EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v)
+ * 5. 
+ */
+
 export const TipModal = () => {
 
   const SOL_WALLET_LENGTH = 44;
-  const NETWORK = "mainnet-beta"
+  const NETWORK = "devnet"
 
   const [walletAddress, setWalletAddress ] = useState(null);
 
@@ -22,11 +35,19 @@ export const TipModal = () => {
   const [ addressSearchError, setAddressSearchError] = useState("");
   const [ isAddressSearchErrorSet, setIsAddressSearchErrorSet] = useState(false);
   const [ didFindAddress, setDidFindAddress ] = useState(false);
-  
 
-  // Sol amount input validation
+  // USDC - SOL choice validation
+  const [ tokenChoice, setTokenChoice ] = useState(null);
+  const [ isTokenChoiceSet, setIsTokenChoiceSet ] = useState(false);
+  const chooseToken = (event) => {
+    event.preventDefault();
+    const token = event.target.options[event.target.selectedIndex].text
+    setTokenChoice(token);
+  }
+
+  // Amount input validation
   const [ tipValue, setTipValue ] = useState(0.05);
-  const [ didConfirmSolAmount, setDidConfirmSolAmount] = useState(false);
+  const [ didConfirmAmount, setDidConfirmAmount] = useState(false);
   const [ solAmountError, setSolAmountError ] = useState("");
   const [ isSolAmountErrorSet, setIsSolAmountErrorSet ] = useState(false);
 
@@ -67,19 +88,19 @@ export const TipModal = () => {
     } else {
       setIsSolAmountErrorSet(false);
       setSolAmountError("");
-      setDidConfirmSolAmount(true);
+      setDidConfirmAmount(true);
       setTipValue(amount);
     }
   }
 
   const editAddress = () => {
     setDidFindAddress(false);
-    setDidConfirmSolAmount(false);
+    setDidConfirmAmount(false);
     setIsSolAmountErrorSet(false);
   }
 
-  const editConfirmedSolAmount = () => {
-    setDidConfirmSolAmount(false);
+  const editConfirmedAmount = () => {
+    setDidConfirmAmount(false);
   }
 
   const searchForAddress = async () => {
@@ -117,21 +138,7 @@ export const TipModal = () => {
 
       const senderAddress = new PublicKey(sendingAddress);
 
-      // Create the transfer instructions 
-      const transactionInstruction = SystemProgram.transfer(
-        {
-          fromPubkey: senderAddress,
-          lamports: amount_in_sol * LAMPORTS_PER_SOL,
-          toPubkey: new PublicKey(receivingAddress)
-        }
-      );
-
-      // Initialize a new transaction instance and add the instructions to it 
-      const transaction = new Transaction().add(transactionInstruction);
-
-      // Set transaction variables
-      transaction.feePayer = senderAddress;
-      transaction.recentBlockhash = await (await connection.getRecentBlockhash()).blockhash;
+      const transaction = await tipSolana(senderAddress, amount_in_sol, receivingAddress);
       
       // Request the sender to sign the transaction, returns a Transaction object
       let signedTransaction = await signTransaction(transaction);
@@ -155,12 +162,32 @@ export const TipModal = () => {
     
   }
 
+  const tipSolana = async (senderAddress, amount_in_sol, receivingAddress) => {
+     // Create the transfer instructions 
+     const transactionInstruction = SystemProgram.transfer(
+      {
+        fromPubkey: senderAddress,
+        lamports: amount_in_sol * LAMPORTS_PER_SOL,
+        toPubkey: new PublicKey(receivingAddress)
+      }
+    );
+
+    // Initialize a new transaction instance and add the instructions to it 
+    const transaction = new Transaction().add(transactionInstruction);
+
+    // Set transaction variables
+    transaction.feePayer = senderAddress;
+    transaction.recentBlockhash = await (await connection.getRecentBlockhash()).blockhash;
+
+    return transaction;
+  }
+
   const resetTipProcess = () => {
     setIsTipProcessCompleted(false);
     setIsTipProcessLoading(false);
     setIsTipActionErrorSet(false);
     setIsSolAmountErrorSet(false);
-    setDidConfirmSolAmount(false);
+    setDidConfirmAmount(false);
     setDidFindAddress(false);
     setIsAddressSearchErrorSet(false);
     setAddressToSearch("");
@@ -174,7 +201,7 @@ export const TipModal = () => {
         <VStack>
           <Text fontSize="6xl">Success!</Text>
           <Button size='md' colorScheme='teal' variant='outline'>
-            <Link fontSize='xl' href={`https://explorer.solana.com/tx/${transactionSignature}?cluster=${NETWORK}`} isExternal>
+            <Link fontSize='xl' href={`https://explorer.solana.com/tx/${transactionSignature}?cluster=${NETWORK}`} isExternal> {/*// 'NETWOEK' can be set to 'devnet', 'testnet', or 'mainnet-beta' */}
               View your confirmed payment on Solana Explorer <ExternalLinkIcon mx='2px' />
             </Link>
           </Button>
@@ -202,7 +229,7 @@ export const TipModal = () => {
             spacing={4}
             pt="10"
             >
-              <Text fontSize="3xl">Tip Someone Some Solana!</Text>
+              <Text fontSize="2xl">Tip Someone Some Solana!</Text>
               <Text fontSize="xl">Step 1: Enter a solana address</Text>
               <VStack>
                 <Flex>
@@ -269,121 +296,152 @@ export const TipModal = () => {
                 }
                 
               </VStack>
+              <Text fontSize="xl">Step 2: Select the token you'd like to tip</Text>
+              <FormControl
+              >
+                <FormLabel htmlFor='tokenChoice'>Select a Token</FormLabel>
+                <Select 
+                  id='token' 
+                  onChange={(event) => {
+                    chooseToken(event);
+                  }}
+                >
+                  <option>SOL</option>
+                  <option>USDC</option>
+                </Select>
+                <Button
+                  mt={4}
+                  colorScheme='teal'
+                  onClick={() => console.log(tokenChoice)}
+                >
+                  Submit
+                </Button>
+              </FormControl>
               {didFindAddress && 
-                <>
-                  <Text fontSize="xl">Step 2: Enter an amount of Sol you'd like to tip</Text>
-                  {wallet ?
-                    <>
-                      <Flex alignItems="center">
-                        <NumberInput 
-                          size="md" 
-                          maxW={24} 
-                          defaultValue={1} 
-                          min={0.05}
-                          max={50}
-                          disabled={didConfirmSolAmount ? true : false}
-                          keepWithinRange={false}
-                          clampValueOnBlur={false}
-                          onChange={(valueString) => setTipValue(valueString)}
-                          value={tipValue}
-                        >
-                          <NumberInputField/>
-                        </NumberInput>
-                        <Text ml="2" fontSize="xl">SOL</Text>
-                      </Flex>
-                      <Alert 
-                        status="info"
-                        alignItems="center"
-                        justifyContent="center"
-                        textAlign="center"
-                        width="300px"
-                        borderRadius="md"
-                      >
-                        <AlertIcon />
-                        Min Tip: 0.05
-                        Max Tip: 50
-                      </Alert>
-      
-                      { didConfirmSolAmount ? 
-                        <Button 
-                          ml="2" 
-                          px="6"
-                          rightIcon={<EditIcon />} 
-                          colorScheme="teal" 
-                          variant="outline"
-                          onClick={() => {editConfirmedSolAmount(null)}}
-                        >
-                          Edit Amount
-                        </Button>
-                        :
-                        <Button 
-                          ml="2" 
-                          px="6"
-                          rightIcon={<AddIcon />} 
-                          colorScheme="teal" 
-                          variant="outline"
-                          onClick={() => {
-                            validateTipValue(tipValue);
-                          }}
-                        >
-                        Confirm Amount
-                        </Button>
-                      }
-                      {isSolAmountErrorSet &&
-                        <Alert status="error" borderRadius="md">
-                          <AlertIcon />
-                          <AlertTitle mr={2}>Error: </AlertTitle>
-                          <AlertDescription mr={8} >{solAmountError}</AlertDescription>
-                          <CloseButton 
-                            position="absolute" 
-                            right="8px" 
-                            top="8px"
-                            onClick={() => {
-                                setSolAmountError("");
-                                setIsSolAmountErrorSet(false);
-                              }
-                            }
-                          />
-                        </Alert>
-                      }
-        
-                      { didConfirmSolAmount &&
-                        <>
-                          <Text fontSize="xl">Step 3: Tip away!</Text>
-                          <Button 
-                            ml="2" 
-                            colorScheme="teal" 
-                            variant="outline"
-                            onClick={() => {
-                              performTip(walletAddress, tipValue, addressToSearch)
-                            }}
-                          >
-                            Tip Solana
-                          </Button>
-                          {isTipActionErrorSet &&
-                            <Alert status="error" borderRadius="md">
-                              <AlertIcon />
-                              <AlertTitle mr={2}>Error: </AlertTitle>
-                              <AlertDescription mr={8} >{tipActionError}</AlertDescription>
-                              <CloseButton 
-                                position="absolute" 
-                                right="8px" 
-                                top="8px"
-                                onClick={() => {
-                                    setTipActionError("");
-                                    setIsTipActionErrorSet(false);
-                                  }
+                                
+                                <>
+                                <Text fontSize="xl">Step 3: Enter the amount you'd like to tip</Text>
+                                {wallet ?
+                                  <>
+                                    <> 
+                                      {/* Solana Tip Input */}
+                                      <Flex alignItems="center">
+                                        
+                                        <NumberInput 
+                                          size="md" 
+                                          maxW={24} 
+                                          defaultValue={1} 
+                                          min={0.05}
+                                          max={50}
+                                          disabled={didConfirmAmount ? true : false}
+                                          keepWithinRange={false}
+                                          clampValueOnBlur={false}
+                                          onChange={(valueString) => setTipValue(valueString)}
+                                          value={tipValue}
+                                        >
+                                          <NumberInputField/>
+                                        </NumberInput>
+                                        <Text ml="2" fontSize="xl">SOL</Text>
+                                      </Flex>
+                                      <Alert 
+                                        status="info"
+                                        alignItems="center"
+                                        justifyContent="center"
+                                        textAlign="center"
+                                        width="300px"
+                                        borderRadius="md"
+                                      >
+                                        <AlertIcon />
+                                        Min Tip: 0.05
+                                        Max Tip: 50
+                                      </Alert>
+                                    </>
+              
+                                    <>
+                                      {/* USDC Tip Input */} 
+                                    </>
+              
+                                    { didConfirmAmount ? 
+                                      <Button 
+                                        ml="2" 
+                                        px="6"
+                                        rightIcon={<EditIcon />} 
+                                        colorScheme="teal" 
+                                        variant="outline"
+                                        onClick={() => {editConfirmedAmount(null)}}
+                                      >
+                                        Edit Amount
+                                      </Button>
+                                      :
+                                      <Button 
+                                        ml="2" 
+                                        px="6"
+                                        rightIcon={<AddIcon />} 
+                                        colorScheme="teal" 
+                                        variant="outline"
+                                        onClick={() => {
+                                          validateTipValue(tipValue);
+                                        }}
+                                      >
+                                      Confirm Amount
+                                      </Button>
+                                    }
+                                    {isSolAmountErrorSet &&
+                                      <Alert status="error" borderRadius="md">
+                                        <AlertIcon />
+                                        <AlertTitle mr={2}>Error: </AlertTitle>
+                                        <AlertDescription mr={8} >{solAmountError}</AlertDescription>
+                                        <CloseButton 
+                                          position="absolute" 
+                                          right="8px" 
+                                          top="8px"
+                                          onClick={() => {
+                                              setSolAmountError("");
+                                              setIsSolAmountErrorSet(false);
+                                            }
+                                          }
+                                        />
+                                      </Alert>
+                                    }
+                      
+                                    { didConfirmAmount &&
+                                      <>
+                                        <Text fontSize="xl">Step 3: Tip away!</Text>
+                                        <Button 
+                                          ml="2" 
+                                          colorScheme="teal" 
+                                          variant="outline"
+                                          onClick={() => {
+                                            performTip(walletAddress, tipValue, addressToSearch)
+                                          }}
+                                        >
+                                          Tip Solana
+                                        </Button>
+                                        {isTipActionErrorSet &&
+                                          <Alert status="error" borderRadius="md">
+                                            <AlertIcon />
+                                            <AlertTitle mr={2}>Error: </AlertTitle>
+                                            <AlertDescription mr={8} >{tipActionError}</AlertDescription>
+                                            <CloseButton 
+                                              position="absolute" 
+                                              right="8px" 
+                                              top="8px"
+                                              onClick={() => {
+                                                  setTipActionError("");
+                                                  setIsTipActionErrorSet(false);
+                                                }
+                                              }
+                                            />
+                                          </Alert>
+                                        }
+                                      </>
+                                    }
+                                  </>
+                                : 
+                                  <WalletAlert/>
                                 }
-                              />
-                            </Alert>
-                          }
-                        </>
-                      }
-                    </>
-                  : 
-                    <WalletAlert/>
-                  }
-                </>
+                              </>
+                            
               }
             </VStack>
           }
