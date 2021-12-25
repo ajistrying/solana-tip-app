@@ -42,7 +42,10 @@ export const TipModal = () => {
   const chooseToken = (event) => {
     event.preventDefault();
     const token = event.target.options[event.target.selectedIndex].text
-    setTokenChoice(token);
+    if(token === "USDC" || token === "SOL") {
+      setTokenChoice(token);
+      setIsTokenChoiceSet(true);
+    }
   }
 
   // Amount input validation
@@ -101,6 +104,10 @@ export const TipModal = () => {
 
   const editConfirmedAmount = () => {
     setDidConfirmAmount(false);
+  }
+
+  const changeTokenChoice = () => {
+    setIsTokenChoiceSet(false);
   }
 
   const searchForAddress = async () => {
@@ -296,152 +303,177 @@ export const TipModal = () => {
                 }
                 
               </VStack>
-              <Text fontSize="xl">Step 2: Select the token you'd like to tip</Text>
-              <FormControl
-              >
-                <FormLabel htmlFor='tokenChoice'>Select a Token</FormLabel>
-                <Select 
-                  id='token' 
-                  onChange={(event) => {
-                    chooseToken(event);
-                  }}
-                >
-                  <option>SOL</option>
-                  <option>USDC</option>
-                </Select>
-                <Button
-                  mt={4}
-                  colorScheme='teal'
-                  onClick={() => console.log(tokenChoice)}
-                >
-                  Submit
-                </Button>
-              </FormControl>
-              {didFindAddress && 
-                                
-                                <>
-                                <Text fontSize="xl">Step 3: Enter the amount you'd like to tip</Text>
-                                {wallet ?
-                                  <>
-                                    <> 
-                                      {/* Solana Tip Input */}
-                                      <Flex alignItems="center">
-                                        
-                                        <NumberInput 
-                                          size="md" 
-                                          maxW={24} 
-                                          defaultValue={1} 
-                                          min={0.05}
-                                          max={50}
-                                          disabled={didConfirmAmount ? true : false}
-                                          keepWithinRange={false}
-                                          clampValueOnBlur={false}
-                                          onChange={(valueString) => setTipValue(valueString)}
-                                          value={tipValue}
-                                        >
-                                          <NumberInputField/>
-                                        </NumberInput>
-                                        <Text ml="2" fontSize="xl">SOL</Text>
-                                      </Flex>
-                                      <Alert 
-                                        status="info"
-                                        alignItems="center"
-                                        justifyContent="center"
-                                        textAlign="center"
-                                        width="300px"
-                                        borderRadius="md"
-                                      >
-                                        <AlertIcon />
-                                        Min Tip: 0.05
-                                        Max Tip: 50
-                                      </Alert>
-                                    </>
               
-                                    <>
-                                      {/* USDC Tip Input */} 
-                                    </>
-              
-                                    { didConfirmAmount ? 
-                                      <Button 
-                                        ml="2" 
-                                        px="6"
-                                        rightIcon={<EditIcon />} 
-                                        colorScheme="teal" 
-                                        variant="outline"
-                                        onClick={() => {editConfirmedAmount(null)}}
-                                      >
-                                        Edit Amount
-                                      </Button>
-                                      :
-                                      <Button 
-                                        ml="2" 
-                                        px="6"
-                                        rightIcon={<AddIcon />} 
-                                        colorScheme="teal" 
-                                        variant="outline"
-                                        onClick={() => {
-                                          validateTipValue(tipValue);
-                                        }}
-                                      >
-                                      Confirm Amount
-                                      </Button>
-                                    }
-                                    {isSolAmountErrorSet &&
-                                      <Alert status="error" borderRadius="md">
-                                        <AlertIcon />
-                                        <AlertTitle mr={2}>Error: </AlertTitle>
-                                        <AlertDescription mr={8} >{solAmountError}</AlertDescription>
-                                        <CloseButton 
-                                          position="absolute" 
-                                          right="8px" 
-                                          top="8px"
-                                          onClick={() => {
-                                              setSolAmountError("");
-                                              setIsSolAmountErrorSet(false);
-                                            }
-                                          }
-                                        />
-                                      </Alert>
-                                    }
+              {didFindAddress &&               
+                <>
+                  {wallet ?
+                    <>
+                      <Text fontSize="xl">Step 2: Select the token you'd like to tip</Text>
+                      <FormControl>
+                        <VStack centerContent>
+                          <Flex alignItems="center">
+                            <Select 
+                              id='token' 
+                              onChange={(event) => { chooseToken(event) }}
+                              disabled={isTokenChoiceSet} 
+                            >
+                              <option>SOL</option>
+                              <option>USDC</option>
+                            </Select>
+                            { isTokenChoiceSet &&
+
+                              <IconButton
+                                ml="2"
+                                aria-label="Found address" 
+                                colorScheme="teal" 
+                                variant="outline" 
+                                disabled="true" 
+                                icon={<CheckIcon />} 
+                              />
+                            }
+                          </Flex>
+                          { isTokenChoiceSet &&
+                            <Button 
+                            mt="2" 
+                            rightIcon={<EditIcon />} 
+                            colorScheme="teal" 
+                            variant="outline"
+                            onClick={() => {changeTokenChoice(false)}}
+                            >
+                              Switch Token
+                            </Button>
+                          }
+                        </VStack>
+                      </FormControl>
                       
-                                    { didConfirmAmount &&
-                                      <>
-                                        <Text fontSize="xl">Step 3: Tip away!</Text>
-                                        <Button 
-                                          ml="2" 
-                                          colorScheme="teal" 
-                                          variant="outline"
-                                          onClick={() => {
-                                            performTip(walletAddress, tipValue, addressToSearch)
-                                          }}
-                                        >
-                                          Tip Solana
-                                        </Button>
-                                        {isTipActionErrorSet &&
-                                          <Alert status="error" borderRadius="md">
-                                            <AlertIcon />
-                                            <AlertTitle mr={2}>Error: </AlertTitle>
-                                            <AlertDescription mr={8} >{tipActionError}</AlertDescription>
-                                            <CloseButton 
-                                              position="absolute" 
-                                              right="8px" 
-                                              top="8px"
-                                              onClick={() => {
-                                                  setTipActionError("");
-                                                  setIsTipActionErrorSet(false);
-                                                }
-                                              }
-                                            />
-                                          </Alert>
-                                        }
-                                      </>
-                                    }
-                                  </>
-                                : 
-                                  <WalletAlert/>
+
+                      { isTokenChoiceSet &&
+
+                        <>
+                          <Text>`${tokenChoice}`</Text>
+                          <Text fontSize="xl">Step 3: Enter the amount you'd like to tip</Text>
+                          <>
+                            {/* Solana Tip Input */}
+                            <Flex alignItems="center">
+                              
+                              <NumberInput 
+                                size="md" 
+                                maxW={24} 
+                                defaultValue={1} 
+                                min={0.05}
+                                max={50}
+                                disabled={didConfirmAmount ? true : false}
+                                keepWithinRange={false}
+                                clampValueOnBlur={false}
+                                onChange={(valueString) => setTipValue(valueString)}
+                                value={tipValue}
+                              >
+                                <NumberInputField/>
+                              </NumberInput>
+                              <Text ml="2" fontSize="xl">SOL</Text>
+                            </Flex>
+                            <Alert 
+                              status="info"
+                              alignItems="center"
+                              justifyContent="center"
+                              textAlign="center"
+                              width="300px"
+                              borderRadius="md"
+                            >
+                              <AlertIcon />
+                              Min Tip: 0.05
+                              Max Tip: 50
+                            </Alert>
+                          </>
+
+                          <>
+                            {/* USDC Tip Input */} 
+                          </>
+
+                          { didConfirmAmount ? 
+                            <Button 
+                              ml="2" 
+                              px="6"
+                              rightIcon={<EditIcon />} 
+                              colorScheme="teal" 
+                              variant="outline"
+                              onClick={() => {editConfirmedAmount(null)}}
+                            >
+                              Edit Amount
+                            </Button>
+                            :
+                            <Button 
+                              ml="2" 
+                              px="6"
+                              rightIcon={<AddIcon />} 
+                              colorScheme="teal" 
+                              variant="outline"
+                              onClick={() => {
+                                validateTipValue(tipValue);
+                              }}
+                            >
+                            Confirm Amount
+                            </Button>
+                          }
+
+                          { isSolAmountErrorSet &&
+                            <Alert status="error" borderRadius="md">
+                              <AlertIcon />
+                              <AlertTitle mr={2}>Error: </AlertTitle>
+                              <AlertDescription mr={8} >{solAmountError}</AlertDescription>
+                              <CloseButton 
+                                position="absolute" 
+                                right="8px" 
+                                top="8px"
+                                onClick={() => {
+                                    setSolAmountError("");
+                                    setIsSolAmountErrorSet(false);
+                                  }
                                 }
-                              </>
-                            
+                              />
+                            </Alert>
+                          }
+        
+                          { didConfirmAmount &&
+                            <>
+                              <Text fontSize="xl">Step 3: Tip away!</Text>
+                              <Button 
+                                ml="2" 
+                                colorScheme="teal" 
+                                variant="outline"
+                                onClick={() => {
+                                  performTip(walletAddress, tipValue, addressToSearch)
+                                }}
+                              >
+                                Tip Solana
+                              </Button>
+                              {isTipActionErrorSet &&
+                                <Alert status="error" borderRadius="md">
+                                  <AlertIcon />
+                                  <AlertTitle mr={2}>Error: </AlertTitle>
+                                  <AlertDescription mr={8} >{tipActionError}</AlertDescription>
+                                  <CloseButton 
+                                    position="absolute" 
+                                    right="8px" 
+                                    top="8px"
+                                    onClick={() => {
+                                        setTipActionError("");
+                                        setIsTipActionErrorSet(false);
+                                      }
+                                    }
+                                  />
+                                </Alert>
+                              }
+                            </>
+                          }
+                        </>
+
+                      }
+                    </>
+                  : 
+                    <WalletAlert/>
+                  }
+                </>                       
               }
             </VStack>
           }
