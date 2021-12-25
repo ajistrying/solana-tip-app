@@ -5,7 +5,7 @@ import {  Alert, AlertIcon, Link,
   Text, Button, IconButton, 
   NumberInput, NumberInputField, 
   Input, Flex, Spinner, VStack,
-  FormLabel, Select, FormControl } from "@chakra-ui/react"
+  FormLabel, Select, FormControl, Box } from "@chakra-ui/react"
 import { SearchIcon, CheckIcon, EditIcon, AddIcon, RepeatIcon, ExternalLinkIcon } from '@chakra-ui/icons'
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { WalletAlert } from "./WalletAlert";
@@ -311,27 +311,16 @@ export const TipModal = () => {
                       <Text fontSize="xl">Step 2: Select the token you'd like to tip</Text>
                       <FormControl>
                         <VStack centerContent>
-                          <Flex alignItems="center">
+                          <Box w={32}>
                             <Select 
                               id='token' 
                               onChange={(event) => { chooseToken(event) }}
-                              disabled={isTokenChoiceSet} 
+                              disabled={isTokenChoiceSet}
                             >
                               <option>SOL</option>
                               <option>USDC</option>
                             </Select>
-                            { isTokenChoiceSet &&
-
-                              <IconButton
-                                ml="2"
-                                aria-label="Found address" 
-                                colorScheme="teal" 
-                                variant="outline" 
-                                disabled="true" 
-                                icon={<CheckIcon />} 
-                              />
-                            }
-                          </Flex>
+                          </Box>
                           { isTokenChoiceSet &&
                             <Button 
                             mt="2" 

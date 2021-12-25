@@ -43,7 +43,7 @@ function App() {
   return ( 
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={wallets} autoConnect>
-        <VStack spacing={4} px={11}>
+        <VStack spacing={4}>
           <TipModal/>
           <Wallet/>
           <Divider width="50vw"/>
