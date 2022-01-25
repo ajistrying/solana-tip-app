@@ -13,7 +13,7 @@ import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, Transaction } from '@solana
 export const TipModal = () => {
 
   const SOL_WALLET_LENGTH = 44;
-  const NETWORK = "mainnet-beta"
+  const NETWORK = "devnet"
 
   const [walletAddress, setWalletAddress ] = useState(null);
 
